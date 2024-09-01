@@ -14,6 +14,7 @@ const (
 	STAR        rune = '*'
 	DOT         rune = '.'
 	PLUS        rune = '+'
+	MINUS       rune = '-'
 	COMMA       rune = ','
 )
 
@@ -53,6 +54,8 @@ func main() {
 			fmt.Println("PLUS + null")
 		case COMMA:
 			fmt.Println("COMMA , null")
+		case MINUS:
+			fmt.Println("MINUS - null")
 		}
 	}
 	fmt.Println("EOF  null")
