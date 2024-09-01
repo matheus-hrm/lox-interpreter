@@ -77,9 +77,6 @@ func (s *Scanner) AddToken(tokenType TokenType) {
 }
 
 func (s *Scanner) Advance() byte {
-	if s.Current >= len(s.Source) {
-		return 0
-	}
 	c := s.Source[s.Current]
 	s.Current++
 	return c
