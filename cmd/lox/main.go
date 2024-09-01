@@ -30,6 +30,8 @@ func main() {
 			fmt.Println(tokenStr)
 		} else {
 			fmt.Fprintf(os.Stderr, "[line 1] Error: Unexpected character: %c\n", current)
+			fmt.Println("EOF  null")
+			os.Exit(65)
 		}
 	}
 	fmt.Println("EOF  null")
