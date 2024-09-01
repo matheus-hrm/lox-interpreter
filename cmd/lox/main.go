@@ -36,7 +36,7 @@ func main() {
 	}
 	fmt.Println("EOF  null")
 	if !hasError {
-		os.Exit(1)
+		os.Exit(0)
 	}
 	os.Exit(65)
 }
