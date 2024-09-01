@@ -24,15 +24,19 @@ func main() {
 	}
 
 	fileContents := string(rawfile)
+	hasError := false
 	for _, current := range fileContents {
 		tokenStr, ok := TokenMap[string(current)]
 		if ok {
 			fmt.Println(tokenStr)
 		} else {
 			fmt.Fprintf(os.Stderr, "[line 1] Error: Unexpected character: %c\n", current)
-			fmt.Println("EOF  null")
-			os.Exit(65)
+			hasError = true
 		}
 	}
 	fmt.Println("EOF  null")
+	if !hasError {
+		os.Exit(1)
+	}
+	os.Exit(65)
 }
