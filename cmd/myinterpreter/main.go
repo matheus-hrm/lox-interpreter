@@ -5,6 +5,12 @@ import (
 	"os"
 )
 
+const (
+	EOF = "EOF"
+	LEFT_PAREN rune = '('
+	RIGHT_PAREN rune = ')'
+)
+
 func main() {
 	fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
 
@@ -19,17 +25,19 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
-
-	filename := os.Args[2]
-	fileContents, err := os.ReadFile(filename)
+	rawfile, err := os.ReadFile(os.Args[2])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
 		os.Exit(1)
 	}
-
-	if len(fileContents) > 0 {
-		panic("Scanner not implemented")
-	} else {
-		fmt.Println("EOF  null")
+	fileContents := string(rawfile)
+	for _, current := range fileContents {
+		switch current {
+		case LEFT_PAREN:
+			fmt.Println("LEFT_PAREN ( null")
+		case RIGHT_PAREN:
+			fmt.Println("RIGHT_PAREN ) null")
+		}
 	}
+	fmt.Println("EOF null")
 }
