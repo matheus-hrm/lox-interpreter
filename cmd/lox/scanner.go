@@ -64,13 +64,9 @@ func (s *Scanner) ScanToken() {
 }
 
 func (s *Scanner) AddToken(tokenType TokenType) {
-	lexeme := ""
-	if s.Current <= len(s.Source) {
-		lexeme = s.Source[s.Start:s.Current]
-	}
 	s.Tokens = append(s.Tokens, Token{
 		Type:    TokenMap[string(tokenType)],
-		Lexeme:  lexeme,
+		Lexeme:  s.Source[s.Start:s.Current],
 		Literal: "",
 		Line:    s.Line,
 	})
