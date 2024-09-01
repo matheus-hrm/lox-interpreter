@@ -7,29 +7,35 @@ type Token struct {
 	Line    int
 }
 
+type TokenType string
+
 const (
-	EOF         = "EOF"
-	LEFT_PAREN  = "("
-	RIGHT_PAREN = ")"
-	LEFT_BRACE  = "{"
-	RIGHT_BRACE = "}"
-	STAR        = "*"
-	DOT         = "."
-	PLUS        = "+"
-	MINUS       = "-"
-	COMMA       = ","
-	SEMICOLON   = ";"
+	EOF         TokenType = "EOF"
+	LEFT_PAREN  TokenType = "("
+	RIGHT_PAREN TokenType = ")"
+	LEFT_BRACE  TokenType = "{"
+	RIGHT_BRACE TokenType = "}"
+	STAR        TokenType = "*"
+	DOT         TokenType = "."
+	PLUS        TokenType = "+"
+	MINUS       TokenType = "-"
+	COMMA       TokenType = ","
+	SEMICOLON   TokenType = ";"
+	EQUAL       TokenType = "="
+	EQUAL_EQUAL TokenType = "=="
 )
 
 var TokenMap = map[string]string{
-	LEFT_PAREN:  "LEFT_PAREN ( null",
-	RIGHT_PAREN: "RIGHT_PAREN ) null",
-	LEFT_BRACE:  "LEFT_BRACE { null",
-	RIGHT_BRACE: "RIGHT_BRACE } null",
-	STAR:        "STAR * null",
-	DOT:         "DOT . null",
-	PLUS:        "PLUS + null",
-	MINUS:       "MINUS - null",
-	COMMA:       "COMMA , null",
-	SEMICOLON:   "SEMICOLON ; null",
+	"(":  "LEFT_PAREN",
+	")":  "RIGHT_PAREN",
+	"{":  "LEFT_BRACE",
+	"}":  "RIGHT_BRACE",
+	"*":  "STAR",
+	".":  "DOT",
+	"+":  "PLUS",
+	"-":  "MINUS",
+	",":  "COMMA",
+	";":  "SEMICOLON",
+	"=":  "EQUAL",
+	"==": "EQUAL_EQUAL",
 }
