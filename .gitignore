@@ -1,0 +1,5 @@
+*.yml
+*.sum
+.codecrafters
+.gitattributes
+codecrafters.yml
