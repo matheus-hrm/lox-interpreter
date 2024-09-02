@@ -64,19 +64,17 @@ func (s *Scanner) ScanToken() {
 	case SEMICOLON:
 		s.AddToken(SEMICOLON)
 	case EQUAL:
-		if s.Current < len(s.Source) && s.Source[s.Current] == '=' {
-			s.Advance()
-			s.AddToken(EQUAL_EQUAL)
-		} else {
-			s.AddToken(EQUAL)
-		}
+		s.matchAndAddToken('=', EQUAL_EQUAL, EQUAL)
 	case EQUAL_EQUAL:
 		s.AddToken(EQUAL_EQUAL)
+	case BANG:
+		s.matchAndAddToken('=', BANG_EQUAL, BANG)
+	case BANG_EQUAL:
+		s.AddToken(BANG_EQUAL)
 	default:
 		fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", s.Line, c)
 		s.ExitCode = LexicalError
 	}
-
 }
 
 func (s *Scanner) AddToken(tokenType TokenType) {
@@ -90,6 +88,15 @@ func (s *Scanner) AddToken(tokenType TokenType) {
 		Literal: "",
 		Line:    s.Line,
 	})
+}
+
+func (s *Scanner) matchAndAddToken(expected byte, matchToken, noMatchToken TokenType) {
+	if s.Current < len(s.Source) && s.Source[s.Current] == expected {
+		s.Advance()
+		s.AddToken(matchToken)
+	} else {
+		s.AddToken(noMatchToken)
+	}
 }
 
 func (s *Scanner) Advance() byte {

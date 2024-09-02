@@ -23,6 +23,8 @@ const (
 	SEMICOLON   TokenType = ";"
 	EQUAL       TokenType = "="
 	EQUAL_EQUAL TokenType = "=="
+	BANG        TokenType = "!"
+	BANG_EQUAL  TokenType = "!="
 )
 
 var TokenMap = map[string]string{
@@ -38,4 +40,6 @@ var TokenMap = map[string]string{
 	";":  "SEMICOLON",
 	"=":  "EQUAL",
 	"==": "EQUAL_EQUAL",
+	"!":  "BANG",
+	"!=": "BANG_EQUAL",
 }
