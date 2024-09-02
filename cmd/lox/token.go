@@ -30,6 +30,9 @@ const (
 	LESS_EQUAL    TokenType = "<="
 	GREATER_EQUAL TokenType = ">="
 	SLASH         TokenType = "/"
+	WHITESPACE    TokenType = " "
+	TAB           TokenType = "\t"
+	NEWLINE       TokenType = "\n"
 )
 
 var TokenMap = map[string]string{
@@ -52,4 +55,7 @@ var TokenMap = map[string]string{
 	"<=": "LESS_EQUAL",
 	">=": "GREATER_EQUAL",
 	"/":  "SLASH",
+	" ":  "WHITESPACE",
+	"\t": "TAB",
+	"\n": "NEWLINE",
 }

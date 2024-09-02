@@ -83,6 +83,10 @@ func (s *Scanner) ScanToken() {
 		} else {
 			s.AddToken(SLASH)
 		}
+	case WHITESPACE, TAB:
+		// ignore whitespace
+	case NEWLINE:
+		s.Line++
 	default:
 		fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", s.Line, c)
 		s.ExitCode = LexicalError
