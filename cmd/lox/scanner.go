@@ -1,20 +1,32 @@
 package main
 
+import (
+	"fmt"
+	"os"
+)
+
 type Scanner struct {
 	Source  string
 	Tokens  []Token
 	Start   int
 	Current int
 	Line    int
+
+	ExitCode int
 }
+
+const (
+	LexicalError = 65
+)
 
 func NewScanner(source string) *Scanner {
 	return &Scanner{
-		Source:  source,
-		Tokens:  []Token{},
-		Start:   0,
-		Current: 0,
-		Line:    1,
+		Source:   source,
+		Tokens:   []Token{},
+		Start:    0,
+		Current:  0,
+		Line:     1,
+		ExitCode: 0,
 	}
 }
 
@@ -52,7 +64,7 @@ func (s *Scanner) ScanToken() {
 	case SEMICOLON:
 		s.AddToken(SEMICOLON)
 	case EQUAL:
-		if s.Source[s.Current] == '=' {
+		if s.Current < len(s.Source) && s.Source[s.Current] == '=' {
 			s.Advance()
 			s.AddToken(EQUAL_EQUAL)
 		} else {
@@ -60,19 +72,30 @@ func (s *Scanner) ScanToken() {
 		}
 	case EQUAL_EQUAL:
 		s.AddToken(EQUAL_EQUAL)
+	default:
+		fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", s.Line, c)
+		s.ExitCode = LexicalError
 	}
+
 }
 
 func (s *Scanner) AddToken(tokenType TokenType) {
+	lexeme := ""
+	if s.Current <= len(s.Source) {
+		lexeme = s.Source[s.Start:s.Current]
+	}
 	s.Tokens = append(s.Tokens, Token{
 		Type:    TokenMap[string(tokenType)],
-		Lexeme:  s.Source[s.Start:s.Current],
+		Lexeme:  lexeme,
 		Literal: "",
 		Line:    s.Line,
 	})
 }
 
 func (s *Scanner) Advance() byte {
+	if s.Current >= len(s.Source) {
+		return 0
+	}
 	c := s.Source[s.Current]
 	s.Current++
 	return c

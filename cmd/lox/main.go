@@ -27,21 +27,16 @@ func main() {
 	scanner := NewScanner(fileContents)
 	tokens := scanner.ScanTokens()
 
-	hasError := false
 	for _, token := range tokens {
 		if token.Type == "EOF" {
 			fmt.Println("EOF  null")
 		} else {
 			fmt.Printf("%s %s null\n", token.Type, token.Lexeme)
 		}
-		if token.Type == "ERROR" {
-			fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %s\n", token.Line, token.Lexeme)
-			hasError = true
-		}
 	}
 
-	if hasError {
-		os.Exit(65)
+	if scanner.ExitCode != 0 {
+		os.Exit(scanner.ExitCode)
 	}
 	os.Exit(0)
 }
