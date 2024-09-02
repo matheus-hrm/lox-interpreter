@@ -75,6 +75,14 @@ func (s *Scanner) ScanToken() {
 		s.matchAndAddToken('=', LESS_EQUAL, LESS)
 	case GREATER:
 		s.matchAndAddToken('=', GREATER_EQUAL, GREATER)
+	case SLASH:
+		if s.Current < len(s.Source) && s.Source[s.Current] == '/' {
+			for s.Current < len(s.Source) && s.Source[s.Current] != '\n' {
+				s.Advance()
+			}
+		} else {
+			s.AddToken(SLASH)
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", s.Line, c)
 		s.ExitCode = LexicalError

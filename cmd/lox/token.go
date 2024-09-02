@@ -29,6 +29,7 @@ const (
 	GREATER       TokenType = ">"
 	LESS_EQUAL    TokenType = "<="
 	GREATER_EQUAL TokenType = ">="
+	SLASH         TokenType = "/"
 )
 
 var TokenMap = map[string]string{
@@ -50,4 +51,5 @@ var TokenMap = map[string]string{
 	">":  "GREATER",
 	"<=": "LESS_EQUAL",
 	">=": "GREATER_EQUAL",
+	"/":  "SLASH",
 }
