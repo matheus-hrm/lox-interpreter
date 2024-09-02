@@ -71,6 +71,10 @@ func (s *Scanner) ScanToken() {
 		s.matchAndAddToken('=', BANG_EQUAL, BANG)
 	case BANG_EQUAL:
 		s.AddToken(BANG_EQUAL)
+	case LESS:
+		s.matchAndAddToken('=', LESS_EQUAL, LESS)
+	case GREATER:
+		s.matchAndAddToken('=', GREATER_EQUAL, GREATER)
 	default:
 		fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", s.Line, c)
 		s.ExitCode = LexicalError
