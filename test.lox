@@ -1,1 +1,6 @@
-"world" = "world" != (90 == 78)
+str1 = "Test"
+str2 = "Case"
+num1 = 100
+num2 = 2000000.00000
+num3 = 23.574392
+result = (str1 == str2) != ((num1 + num2) >= 300)
