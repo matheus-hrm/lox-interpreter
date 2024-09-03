@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 )
 
 const (
@@ -128,15 +129,33 @@ func (s *Scanner) scanNumber() {
 	for isDigit(s.Peek()) {
 		s.Advance()
 	}
-
+	hasFractionalPart := false
 	if s.Peek() == '.' && isDigit(s.PeekNext()) {
+		hasFractionalPart = true
 		s.Advance()
 		for isDigit(s.Peek()) {
 			s.Advance()
 		}
 	}
 	value := s.Source[s.Start:s.Current]
-	s.AddToken("NUMBER", value)
+	_, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		s.AddError(fmt.Sprintf("Invalid number: %s", value))
+		return
+	}
+	if !hasFractionalPart {
+		value += ".0"
+	} else {
+		if value[len(value)-1] == '.' {
+			if value[len(value)+1] == '0' {
+				value = value[:len(value)-1]
+			} else {
+				value += "0"
+			}
+		}
+	}
+
+	s.AddToken(NUMBER, value)
 }
 
 func (s *Scanner) scanIdentifier() {

@@ -28,9 +28,16 @@ func main() {
 	tokens := scanner.ScanTokens()
 
 	for _, token := range tokens {
-		if token.Type == "EOF" {
+		switch token.Type {
+		case "EOF":
 			fmt.Printf("%s  %s\n", token.Type, token.Literal)
-		} else {
+		case "STRING":
+			fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
+		case "NUMBER":
+			fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
+		case "IDENTIFIER":
+			fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
+		default:
 			fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
 		}
 	}
