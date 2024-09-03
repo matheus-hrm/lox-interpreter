@@ -29,14 +29,17 @@ func main() {
 
 	for _, token := range tokens {
 		if token.Type == "EOF" {
-			fmt.Println("EOF  null")
+			fmt.Printf("%s  %s\n", token.Type, token.Literal)
 		} else {
-			fmt.Printf("%s %s null\n", token.Type, token.Lexeme)
+			fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
 		}
 	}
 
-	if scanner.ExitCode != 0 {
-		os.Exit(scanner.ExitCode)
+	if len(scanner.Errors) > 0 {
+		for _, err := range scanner.Errors {
+			fmt.Fprintln(os.Stderr, err)
+		}
+		os.Exit(LexicalError)
 	}
 	os.Exit(0)
 }

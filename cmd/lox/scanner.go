@@ -2,8 +2,20 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
+
+const (
+	LexicalError = 65
+)
+
+type ScannerError struct {
+	Line    int
+	Message string
+}
+
+func (e *ScannerError) Error() string {
+	return fmt.Sprintf("[line %d] Error: %s", e.Line, e.Message)
+}
 
 type Scanner struct {
 	Source  string
@@ -11,22 +23,17 @@ type Scanner struct {
 	Start   int
 	Current int
 	Line    int
-
-	ExitCode int
+	Errors  []error
 }
-
-const (
-	LexicalError = 65
-)
 
 func NewScanner(source string) *Scanner {
 	return &Scanner{
-		Source:   source,
-		Tokens:   []Token{},
-		Start:    0,
-		Current:  0,
-		Line:     1,
-		ExitCode: 0,
+		Source:  source,
+		Tokens:  []Token{},
+		Start:   0,
+		Current: 0,
+		Line:    1,
+		Errors:  []error{},
 	}
 }
 
@@ -35,83 +42,125 @@ func (s *Scanner) ScanTokens() []Token {
 		s.Start = s.Current
 		s.ScanToken()
 	}
-	s.Tokens = append(s.Tokens, Token{Type: "EOF", Lexeme: "", Literal: "", Line: s.Line})
+	s.Tokens = append(s.Tokens, Token{Type: "EOF", Lexeme: "", Literal: "null", Line: s.Line})
 
 	return s.Tokens
 }
 
 func (s *Scanner) ScanToken() {
 	c := s.Advance()
-	switch TokenType(c) {
-	case LEFT_PAREN:
-		s.AddToken(LEFT_PAREN)
-	case RIGHT_PAREN:
-		s.AddToken(RIGHT_PAREN)
-	case LEFT_BRACE:
-		s.AddToken(LEFT_BRACE)
-	case RIGHT_BRACE:
-		s.AddToken(RIGHT_BRACE)
-	case STAR:
-		s.AddToken(STAR)
-	case DOT:
-		s.AddToken(DOT)
-	case PLUS:
-		s.AddToken(PLUS)
-	case MINUS:
-		s.AddToken(MINUS)
-	case COMMA:
-		s.AddToken(COMMA)
-	case SEMICOLON:
-		s.AddToken(SEMICOLON)
-	case EQUAL:
-		s.matchAndAddToken('=', EQUAL_EQUAL, EQUAL)
-	case EQUAL_EQUAL:
-		s.AddToken(EQUAL_EQUAL)
-	case BANG:
+	switch c {
+	case '(', ')', '{', '}', ',', '.', '-', '+', ';', '*':
+		s.AddToken(TokenType(c), nil)
+	case '!':
 		s.matchAndAddToken('=', BANG_EQUAL, BANG)
-	case BANG_EQUAL:
-		s.AddToken(BANG_EQUAL)
-	case LESS:
+	case '=':
+		s.matchAndAddToken('=', EQUAL_EQUAL, EQUAL)
+	case '<':
 		s.matchAndAddToken('=', LESS_EQUAL, LESS)
-	case GREATER:
+	case '>':
 		s.matchAndAddToken('=', GREATER_EQUAL, GREATER)
-	case SLASH:
-		if s.Current < len(s.Source) && s.Source[s.Current] == '/' {
-			for s.Current < len(s.Source) && s.Source[s.Current] != '\n' {
+	case '/':
+		if s.Match('/') {
+			for s.Peek() != '\n' && !s.isAtEnd() {
 				s.Advance()
 			}
 		} else {
-			s.AddToken(SLASH)
+			s.AddToken(SLASH, nil)
 		}
-	case WHITESPACE, TAB:
+	case ' ', '\r', '\t':
 		// ignore whitespace
-	case NEWLINE:
+	case '\n':
 		s.Line++
+	case '"':
+		s.scanString()
 	default:
-		fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", s.Line, c)
-		s.ExitCode = LexicalError
+		if isDigit(c) {
+			s.scanNumber()
+		} else if isAlpha(c) {
+			s.scanIdentifier()
+		} else {
+			s.AddError(fmt.Sprintf("Unexpected character: %c", c))
+		}
 	}
 }
 
-func (s *Scanner) AddToken(tokenType TokenType) {
-	lexeme := ""
-	if s.Current <= len(s.Source) {
-		lexeme = s.Source[s.Start:s.Current]
+func (s *Scanner) AddToken(tokenType TokenType, literal interface{}) {
+	text := s.Source[s.Start:s.Current]
+	var literalStr string
+	if literal != nil {
+		literalStr = fmt.Sprintf("%v", literal)
+	} else {
+		literalStr = "null"
+	}
+	tokentypeStr, ok := TokenMap[string(tokenType)]
+	if !ok {
+		tokentypeStr = string(tokenType)
 	}
 	s.Tokens = append(s.Tokens, Token{
-		Type:    TokenMap[string(tokenType)],
-		Lexeme:  lexeme,
-		Literal: "",
+		Type:    tokentypeStr,
+		Lexeme:  text,
+		Literal: literalStr,
 		Line:    s.Line,
 	})
 }
 
-func (s *Scanner) matchAndAddToken(expected byte, matchToken, noMatchToken TokenType) {
-	if s.Current < len(s.Source) && s.Source[s.Current] == expected {
+func (s *Scanner) scanString() {
+	for s.Peek() != '"' && !s.isAtEnd() {
+		if s.Peek() == '\n' {
+			s.Line++
+		}
 		s.Advance()
-		s.AddToken(matchToken)
+	}
+
+	if s.isAtEnd() {
+		s.AddError("Unterminated string.")
+		return
+	}
+
+	s.Advance()
+
+	value := s.Source[s.Start+1 : s.Current-1]
+	s.AddToken(STRING, value)
+}
+
+func (s *Scanner) scanNumber() {
+	for isDigit(s.Peek()) {
+		s.Advance()
+	}
+
+	if s.Peek() == '.' && isDigit(s.PeekNext()) {
+		s.Advance()
+		for isDigit(s.Peek()) {
+			s.Advance()
+		}
+	}
+	value := s.Source[s.Start:s.Current]
+	s.AddToken("NUMBER", value)
+}
+
+func (s *Scanner) scanIdentifier() {
+	for isAlphaNumeric(s.Peek()) {
+		s.Advance()
+	}
+
+	text := s.Source[s.Start:s.Current]
+	tokenType, ok := keywords[text]
+	if !ok {
+		tokenType = IDENTIFIER
+	}
+	s.AddToken(tokenType, nil)
+}
+
+func (s *Scanner) AddError(message string) {
+	s.Errors = append(s.Errors, &ScannerError{Line: s.Line, Message: message})
+}
+
+func (s *Scanner) matchAndAddToken(expected byte, matchToken, noMatchToken TokenType) {
+	if s.Match(expected) {
+		s.AddToken(matchToken, nil)
 	} else {
-		s.AddToken(noMatchToken)
+		s.AddToken(noMatchToken, nil)
 	}
 }
 
@@ -122,4 +171,42 @@ func (s *Scanner) Advance() byte {
 	c := s.Source[s.Current]
 	s.Current++
 	return c
+}
+
+func (s *Scanner) Match(expected byte) bool {
+	if s.isAtEnd() || s.Source[s.Current] != expected {
+		return false
+	}
+	s.Current++
+	return true
+}
+
+func (s *Scanner) Peek() byte {
+	if s.isAtEnd() {
+		return 0
+	}
+	return s.Source[s.Current]
+}
+
+func (s *Scanner) PeekNext() byte {
+	if s.Current+1 >= len(s.Source) {
+		return 0
+	}
+	return s.Source[s.Current+1]
+}
+
+func (s *Scanner) isAtEnd() bool {
+	return s.Current >= len(s.Source)
+}
+
+func isDigit(c byte) bool {
+	return c >= '0' && c <= '9'
+}
+
+func isAlpha(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
+}
+
+func isAlphaNumeric(c byte) bool {
+	return isAlpha(c) || isDigit(c)
 }
