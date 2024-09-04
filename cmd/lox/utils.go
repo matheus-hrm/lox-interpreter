@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -22,8 +23,7 @@ func formatFloat(value string, number float64) string {
 	if !hasFractionalPart || zeroFraction(value) {
 		return fmt.Sprintf("%.1f", number)
 	} else {
-		decimalCount := len(value) - strings.Index(value, ".") - 1
-		format := fmt.Sprintf("%%.%df", decimalCount)
-		return fmt.Sprintf(format, number)
+		formattedValue := strconv.FormatFloat(number, 'f', -1, 64)
+		return strings.TrimRight(formattedValue, "0")
 	}
 }

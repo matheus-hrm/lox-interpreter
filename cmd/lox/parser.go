@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type Parser struct {
@@ -120,7 +121,7 @@ func (l Literal) String() string {
 		val := fmt.Sprintf("%v", l.Value)
 		return formatFloat(val, v)
 	case string:
-		return v
+		return fmt.Sprintf("%v", strings.Trim(fmt.Sprintf("%v", v), `"`))
 	case nil:
 		return "nil"
 	default:
