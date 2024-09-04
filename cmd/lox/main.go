@@ -12,7 +12,7 @@ func main() {
 	}
 
 	command := os.Args[1]
-	if command != "tokenize" {
+	if command != "tokenize" && command != "parse" {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
@@ -27,26 +27,40 @@ func main() {
 	scanner := NewScanner(fileContents)
 	tokens := scanner.ScanTokens()
 
-	for _, token := range tokens {
-		switch token.Type {
-		case "EOF":
-			fmt.Printf("%s  %s\n", token.Type, token.Literal)
-		case "STRING":
-			fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
-		case "NUMBER":
-			fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
-		case "IDENTIFIER":
-			fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
-		default:
-			fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
+	switch command {
+	case "tokenize":
+		for _, token := range tokens {
+			switch token.Type {
+			case "EOF":
+				fmt.Printf("%s  %s\n", token.Type, token.Literal)
+			case "STRING":
+				fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
+			case "NUMBER":
+				fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
+			case "IDENTIFIER":
+				fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
+			default:
+				fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
+			}
 		}
-	}
 
-	if len(scanner.Errors) > 0 {
-		for _, err := range scanner.Errors {
-			fmt.Fprintln(os.Stderr, err)
+		if len(scanner.Errors) > 0 {
+			for _, err := range scanner.Errors {
+				fmt.Fprintln(os.Stderr, err)
+			}
+			os.Exit(LexicalError)
 		}
-		os.Exit(LexicalError)
+		os.Exit(0)
+
+	case "parse":
+		parser := NewParser(fileContents, tokens)
+		ast, err := parser.Parse()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		for _, node := range ast.Nodes {
+			fmt.Println(node.String())
+		}
 	}
-	os.Exit(0)
 }
