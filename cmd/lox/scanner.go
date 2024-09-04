@@ -5,10 +5,6 @@ import (
 	"strconv"
 )
 
-const (
-	LexicalError = 65
-)
-
 type ScannerError struct {
 	Line    int
 	Message string
@@ -18,13 +14,17 @@ func (e *ScannerError) Error() string {
 	return fmt.Sprintf("[line %d] Error: %s", e.Line, e.Message)
 }
 
+func (s *Scanner) AddError(message string) {
+	s.Errors = append(s.Errors, &ScannerError{Line: s.Line, Message: message})
+}
+
 type Scanner struct {
 	Source  string
 	Tokens  []Token
 	Start   int
 	Current int
 	Line    int
-	Errors  []error
+	Errors  []*ScannerError
 }
 
 func NewScanner(source string) *Scanner {
@@ -34,7 +34,7 @@ func NewScanner(source string) *Scanner {
 		Start:   0,
 		Current: 0,
 		Line:    1,
-		Errors:  []error{},
+		Errors:  []*ScannerError{},
 	}
 }
 
@@ -111,6 +111,9 @@ func (s *Scanner) scanString() {
 		if s.Peek() == '\n' {
 			s.Line++
 		}
+		if s.Peek() == '\\' && s.PeekNext() == '"' {
+			s.Advance()
+		}
 		s.Advance()
 	}
 
@@ -159,10 +162,6 @@ func (s *Scanner) scanIdentifier() {
 		tokenType = IDENTIFIER
 	}
 	s.AddToken(tokenType, nil)
-}
-
-func (s *Scanner) AddError(message string) {
-	s.Errors = append(s.Errors, &ScannerError{Line: s.Line, Message: message})
 }
 
 func (s *Scanner) matchAndAddToken(expected byte, matchToken, noMatchToken TokenType) {

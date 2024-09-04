@@ -309,7 +309,6 @@ func (p *Parser) primary() (Expr, error) {
 			return nil, err
 		}
 		p.consume("RIGHT_PAREN", "Expect ')' after expression.")
-		//return UnaryExpr{Operator: Token{Type: "LEFT_PAREN"}, Right: expr}, nil
 		return Grouping{Expression: expr}, nil
 	default:
 		return nil, &ParserError{Message: "Expect expression.", Token: p.peek()}

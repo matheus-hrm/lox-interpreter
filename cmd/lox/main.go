@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+const LexicalError = 65
+
 func main() {
 	if len(os.Args) < 3 {
 		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh tokenize <filename>")
@@ -43,7 +45,6 @@ func main() {
 				fmt.Printf("%s %s %s\n", token.Type, token.Lexeme, token.Literal)
 			}
 		}
-
 		if len(scanner.Errors) > 0 {
 			for _, err := range scanner.Errors {
 				fmt.Fprintln(os.Stderr, err)
@@ -57,7 +58,21 @@ func main() {
 		ast, err := parser.Parse()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
+			if parserError, ok := err.(*ParserError); ok {
+				fmt.Fprintf(os.Stderr, "Error at line %d: %s\n", parserError.Token.Line, parserError.Message)
+				os.Exit(LexicalError)
+			}
 			os.Exit(1)
+		}
+		if scannerError, ok := err.(*ScannerError); ok {
+			fmt.Fprintf(os.Stderr, "Error at line %d: %s\n", scannerError.Line, scannerError.Message)
+			os.Exit(LexicalError)
+		}
+		if len(scanner.Errors) > 0 {
+			for _, err := range scanner.Errors {
+				fmt.Fprintln(os.Stderr, err)
+			}
+			os.Exit(LexicalError)
 		}
 		for _, node := range ast.Nodes {
 			fmt.Println(node.String())
