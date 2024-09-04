@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 const (
@@ -131,10 +130,7 @@ func (s *Scanner) scanNumber() {
 		s.Advance()
 	}
 
-	hasFractionalPart := false
-
 	if s.Peek() == '.' && isDigit(s.PeekNext()) {
-		hasFractionalPart = true
 		s.Advance()
 		for isDigit(s.Peek()) {
 			s.Advance()
@@ -148,26 +144,8 @@ func (s *Scanner) scanNumber() {
 		return
 	}
 
-	zeroFraction := func(value string) bool {
-		if idx := strings.Index(value, "."); idx != -1 {
-			for _, digit := range value[idx+1:] {
-				if digit != '0' {
-					return false
-				}
-			}
-		}
-		return true
-	}
-
-	if !hasFractionalPart || zeroFraction(value) {
-		value = fmt.Sprintf("%.1f", number)
-	} else {
-		decimalCount := len(value) - strings.Index(value, ".") - 1
-		format := fmt.Sprintf("%%.%df", decimalCount)
-		value = fmt.Sprintf(format, number)
-	}
-
-	s.AddToken(NUMBER, value)
+	fmtdNumber := formatFloat(value, number)
+	s.AddToken(NUMBER, fmtdNumber)
 }
 
 func (s *Scanner) scanIdentifier() {

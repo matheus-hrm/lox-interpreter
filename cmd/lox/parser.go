@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 )
 
 type Parser struct {
@@ -108,13 +109,23 @@ func (u UnaryExpr) String() string {
 }
 
 type Literal struct {
-	Value string
+	Value interface{}
 }
 
 func (l Literal) expr() {}
 
 func (l Literal) String() string {
-	return l.Value
+	switch v := l.Value.(type) {
+	case float64:
+		val := fmt.Sprintf("%v", l.Value)
+		return formatFloat(val, v)
+	case string:
+		return v
+	case nil:
+		return "nil"
+	default:
+		return fmt.Sprintf("%v", v)
+	}
 }
 
 func (p *Parser) assign() (Expr, error) {
@@ -272,7 +283,14 @@ func (p *Parser) primary() (Expr, error) {
 		return Literal{Value: "true"}, nil
 	case p.match("NIL"):
 		return Literal{Value: "nil"}, nil
-	case p.match("NUMBER", "STRING"):
+	case p.match("NUMBER"):
+		num, err := strconv.ParseFloat(p.previous().Lexeme, 64)
+		if err != nil {
+			return nil, &ParserError{Message: ("Invalid number format: " + p.previous().Lexeme), Token: p.previous()}
+		}
+
+		return Literal{Value: num}, nil
+	case p.match("STRING"):
 		return Literal{Value: p.previous().Lexeme}, nil
 	case p.match("LEFT_PAREN"):
 		expr, err := p.expression()
