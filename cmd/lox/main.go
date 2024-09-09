@@ -14,7 +14,7 @@ func main() {
 	}
 
 	command := os.Args[1]
-	if command != "tokenize" && command != "parse" {
+	if command != "tokenize" && command != "parse" && command != "evaluate" {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
@@ -77,5 +77,32 @@ func main() {
 		for _, node := range ast.Nodes {
 			fmt.Println(node.String())
 		}
+	case "evaluate":
+		parser := NewParser(fileContents, tokens)
+		ast, err := parser.Parse()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			if parserError, ok := err.(*ParserError); ok {
+				fmt.Fprintf(os.Stderr, "Error at line %d: %s\n", parserError.Token.Line, parserError.Message)
+				os.Exit(LexicalError)
+			}
+			os.Exit(1)
+		}
+		if scannerError, ok := err.(*ScannerError); ok {
+			fmt.Fprintf(os.Stderr, "Error at line %d: %s\n", scannerError.Line, scannerError.Message)
+			os.Exit(LexicalError)
+		}
+		if len(scanner.Errors) > 0 {
+			for _, err := range scanner.Errors {
+				fmt.Fprintln(os.Stderr, err)
+			}
+			os.Exit(LexicalError)
+		}
+		evaluator := NewEvaluator(ast)
+		evaluator.Evaluate()
+		for _, node := range ast.Nodes {
+			fmt.Println(node.String())
+		}
+
 	}
 }
