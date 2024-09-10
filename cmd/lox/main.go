@@ -99,10 +99,13 @@ func main() {
 			os.Exit(LexicalError)
 		}
 		evaluator := NewEvaluator(ast)
-		evaluator.Evaluate()
-		for _, node := range ast.Nodes {
-			fmt.Println(node.String())
+		res, err := evaluator.Evaluate()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
 		}
-
+		for _, r := range res.([]interface{}) {
+			fmt.Println(formatOutput(r))
+		}
 	}
 }

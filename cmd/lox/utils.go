@@ -28,6 +28,18 @@ func formatFloat(value string, number float64) string {
 	}
 }
 
+func formatOutput(value interface{}) string {
+	switch v := value.(type) {
+	case float64:
+		if float64(int(v)) == v {
+			return fmt.Sprintf("%d", int(v))
+		}
+		return fmt.Sprintf("%.6g", v)
+	default:
+		return fmt.Sprintf("%v", v)
+	}
+}
+
 func isString(value interface{}) bool {
 	_, ok := value.(string)
 	return ok

@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+	"strings"
+)
 
 type Evaluator struct {
 	AST *AST
@@ -40,20 +44,21 @@ func (e *Evaluator) Evaluate() (interface{}, error) {
 func (e *Evaluator) evaluateExpr(expr Expr) (interface{}, error) {
 	switch expr := expr.(type) {
 	case *BinaryExpr:
-		e.evaluateBinary(expr)
+		return e.evaluateBinary(expr)
 	case *Grouping:
-		e.evaluateGrouping(expr)
-	case *Literal:
-		e.evaluateLiteral(expr)
+		return e.evaluateGrouping(expr)
+	case Literal:
+		return e.evaluateLiteral(&expr)
 	case *UnaryExpr:
-		e.evaluateUnary(expr)
+		return e.evaluateUnary(expr)
 	case *LogicalExpr:
-		e.evaluateLogical(expr)
+		return e.evaluateLogical(expr)
 	case *AssignExpr:
-		e.evaluateAssign(expr)
+		return e.evaluateAssign(expr)
+	default:
+		log.Printf("Unknown expression type: %T", expr)
+		return nil, &RuntimeError{Message: "Unknown expression type", Token: Token{}}
 	}
-
-	return nil, nil
 }
 
 func checkNumOp(operator Token, op interface{}) (float64, error) {
@@ -161,8 +166,11 @@ func (e *Evaluator) evaluateGrouping(expr *Grouping) (interface{}, error) {
 
 func (e *Evaluator) evaluateLiteral(expr *Literal) (interface{}, error) {
 	switch v := expr.Value.(type) {
-	case float64, string:
+	case float64:
 		return v, nil
+	case string:
+		rawString := fmt.Sprintf("%v", strings.Trim(fmt.Sprintf("%v", v), `"`))
+		return rawString, nil
 	case bool:
 		return v, nil
 	case nil:
