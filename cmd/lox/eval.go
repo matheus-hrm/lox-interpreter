@@ -94,7 +94,7 @@ func (e *Evaluator) evaluateBinary(expr *BinaryExpr) (interface{}, error) {
 	}
 
 	switch expr.Operator.Type {
-	case "+":
+	case TokenMap["+"]:
 		if isString(left) && isString(right) {
 			return left.(string) + right.(string), nil
 		}
@@ -103,7 +103,7 @@ func (e *Evaluator) evaluateBinary(expr *BinaryExpr) (interface{}, error) {
 			return nil, err
 		}
 		return leftNum + rightNum, nil
-	case "-":
+	case TokenMap["-"]:
 		if isString(left) || isString(right) {
 			return nil, &RuntimeError{Message: "Operands must be numbers", Token: expr.Operator}
 		}
@@ -112,7 +112,7 @@ func (e *Evaluator) evaluateBinary(expr *BinaryExpr) (interface{}, error) {
 			return nil, err
 		}
 		return leftNum - rightNum, nil
-	case "/":
+	case TokenMap["/"]:
 		leftNum, rightNum, err := checkNumOps(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
@@ -121,40 +121,39 @@ func (e *Evaluator) evaluateBinary(expr *BinaryExpr) (interface{}, error) {
 			return nil, &RuntimeError{Message: "Division by zero", Token: expr.Operator}
 		}
 		return leftNum / rightNum, nil
-	case "*":
+	case TokenMap["*"]:
 		leftNum, rightNum, err := checkNumOps(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return leftNum * rightNum, nil
-	case ">":
+	case TokenMap[">"]:
 		leftNum, rightNum, err := checkNumOps(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return leftNum > rightNum, nil
-	case ">=":
+	case TokenMap[">="]:
 		leftNum, rightNum, err := checkNumOps(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return leftNum >= rightNum, nil
-	case "<":
+	case TokenMap["<"]:
 		leftNum, rightNum, err := checkNumOps(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
-
 		return leftNum < rightNum, nil
-	case "<=":
+	case TokenMap["<="]:
 		leftNum, rightNum, err := checkNumOps(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return leftNum <= rightNum, nil
-	case "!=":
+	case TokenMap["!="]:
 		return left != right, nil
-	case "==":
+	case TokenMap["=="]:
 		return left == right, nil
 	}
 	return nil, nil
@@ -186,16 +185,17 @@ func (e *Evaluator) evaluateUnary(expr *UnaryExpr) (interface{}, error) {
 		return nil, err
 	}
 	switch expr.Operator.Type {
-	case "-":
+	case TokenMap["-"]:
 		rightNum, err := checkNumOp(expr.Operator, right)
 		if err != nil {
 			return nil, err
 		}
 		return -rightNum, nil
-	case "!":
+	case TokenMap["!"]:
 		return !isTruthy(right), nil
+	default:
+		return nil, &RuntimeError{Message: "Unknown unary operator", Token: expr.Operator}
 	}
-	return nil, &RuntimeError{Message: "Unknown unary operator", Token: expr.Operator}
 }
 
 func (e *Evaluator) evaluateLogical(expr *LogicalExpr) (interface{}, error) {
