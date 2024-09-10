@@ -55,6 +55,11 @@ func isNil(value interface{}) bool {
 }
 
 func isTruthy(value interface{}) bool {
-	_, ok := value.(bool)
-	return ok
+	if isNil(value) {
+		return false
+	}
+	if b, ok := value.(bool); ok {
+		return b
+	}
+	return true
 }
