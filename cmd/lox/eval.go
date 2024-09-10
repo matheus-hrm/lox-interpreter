@@ -192,8 +192,8 @@ func (e *Evaluator) evaluateUnary(expr *UnaryExpr) (interface{}, error) {
 		}
 		return -rightNum, nil
 	case TokenMap["!"]:
-		if right == "nil" {
-			return true, nil
+		if right == "nil" || right == "false" {
+			return true, nil // nil is falsy
 		}
 		return !isTruthy(right), nil
 	default:
