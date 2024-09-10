@@ -192,6 +192,9 @@ func (e *Evaluator) evaluateUnary(expr *UnaryExpr) (interface{}, error) {
 		}
 		return -rightNum, nil
 	case TokenMap["!"]:
+		if right == "nil" {
+			return true, nil
+		}
 		return !isTruthy(right), nil
 	default:
 		return nil, &RuntimeError{Message: "Unknown unary operator", Token: expr.Operator}
