@@ -95,8 +95,14 @@ func (e *Evaluator) evaluateBinary(expr *BinaryExpr) (interface{}, error) {
 
 	switch expr.Operator.Type {
 	case TokenMap["+"]:
+		if isboolwords(left, right) {
+			return nil, &RuntimeError{Message: "Operands must be numbers", Token: expr.Operator}
+		}
 		if isString(left) && isString(right) {
 			return left.(string) + right.(string), nil
+		}
+		if isString(left) || isString(right) {
+			return nil, &RuntimeError{Message: "Operands must be numbers", Token: expr.Operator}
 		}
 		leftNum, rightNum, err := checkNumOps(expr.Operator, left, right)
 		if err != nil {
@@ -192,9 +198,6 @@ func (e *Evaluator) evaluateUnary(expr *UnaryExpr) (interface{}, error) {
 		}
 		return -rightNum, nil
 	case TokenMap["!"]:
-		if right == "nil" || right == "false" {
-			return true, nil // nil is falsy
-		}
 		return !isTruthy(right), nil
 	default:
 		return nil, &RuntimeError{Message: "Unknown unary operator", Token: expr.Operator}

@@ -45,21 +45,28 @@ func isString(value interface{}) bool {
 	return ok
 }
 
-func isNumber(value interface{}) bool {
-	_, ok := value.(float64)
-	return ok
-}
-
-func isNil(value interface{}) bool {
-	return value == nil
-}
-
 func isTruthy(value interface{}) bool {
 	if value == nil {
 		return false
+	}
+	if value == "nil" || value == "false" {
+		return false
+	}
+	if value == "true" {
+		return true
 	}
 	if b, ok := value.(bool); ok {
 		return b
 	}
 	return true
+}
+
+func isboolwords(left interface{}, right interface{}) bool {
+	if left == "true" || left == "false" || left == "nil" {
+		return true
+	}
+	if right == "true" || right == "false" || right == "nil" {
+		return true
+	}
+	return false
 }

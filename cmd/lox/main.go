@@ -102,7 +102,6 @@ func main() {
 		res, err := evaluator.Evaluate()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			//error code 70
 			if runtimeError, ok := err.(*RuntimeError); ok {
 				fmt.Fprintf(os.Stderr, "Error at line %d: %s\n", runtimeError.Token.Line, runtimeError.Message)
 				os.Exit(70)
