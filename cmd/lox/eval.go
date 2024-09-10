@@ -43,18 +43,18 @@ func (e *Evaluator) Evaluate() (interface{}, error) {
 
 func (e *Evaluator) evaluateExpr(expr Expr) (interface{}, error) {
 	switch expr := expr.(type) {
-	case *BinaryExpr:
-		return e.evaluateBinary(expr)
-	case *Grouping:
-		return e.evaluateGrouping(expr)
+	case BinaryExpr:
+		return e.evaluateBinary(&expr)
+	case Grouping:
+		return e.evaluateGrouping(&expr)
 	case Literal:
 		return e.evaluateLiteral(&expr)
-	case *UnaryExpr:
-		return e.evaluateUnary(expr)
-	case *LogicalExpr:
-		return e.evaluateLogical(expr)
-	case *AssignExpr:
-		return e.evaluateAssign(expr)
+	case UnaryExpr:
+		return e.evaluateUnary(&expr)
+	case LogicalExpr:
+		return e.evaluateLogical(&expr)
+	case AssignExpr:
+		return e.evaluateAssign(&expr)
 	default:
 		log.Printf("Unknown expression type: %T", expr)
 		return nil, &RuntimeError{Message: "Unknown expression type", Token: Token{}}
